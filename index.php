@@ -21,7 +21,7 @@ if($_SERVER['HTTP_HOST']=='localhost'){
 </head>
 <body>
     <div id="cabeca">
-    <img src=<?php echo $previo."img/silverio.png"?> id="silverio" alt="logotipo da escola silverio da costa novo , envolto por um semi circulo vazado">
+    <img src=<?php echo $previo."img/img.png"?> id="silverio" alt="logotipo da escola silverio da costa novo , envolto por um semi circulo vazado">
     </div>
     <div id="modelar">
     <div id="buttomizar">
