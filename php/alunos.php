@@ -57,7 +57,11 @@ if($_POST["alunos"]==true){
             $turma[$i]=$turminha;
             $i++;
             }
-            $selecionavel = "<select id='alunoDisc' name='alunoDisc'  ONCHANGE='buscaNotas()'>";
+            if($_POST['atrazado']==1){
+                $selecionavel = "<select id='alunoDisc' name='alunoDisc'>";
+            }else{
+                $selecionavel = "<select id='alunoDisc' name='alunoDisc'  ONCHANGE='buscaNotas()'>";
+            }
             $selecionavel.="<option value=''>Selecione o aluno</option>";
             foreach($turma as $conteudo){
                 $selecionavel.="<option value='".$conteudo['id']."'>".$conteudo['nome']."</option>";

@@ -4,6 +4,7 @@ $user="root";
 $pass="";
 $server="localhost";
 
+
         $db_classificacao_read = new mysqli($server, $user, $pass, "classificacao");
         $db_classificacao_write = new mysqli($server, $user, $pass, "classificacao");
 

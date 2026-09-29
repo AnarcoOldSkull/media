@@ -1,4 +1,7 @@
+let atrazo = 0;
+
 function alunos(){
+    atrazo=0;
     document.getElementById('conteudo').innerHTML = `<div class="bloco">
                                                     <div class="labeamento">Ano:</div>
                                                     ${selectAno()}
@@ -14,10 +17,12 @@ function alunos(){
                                                     <div class="labeamento">Adicionar Aluno:</div>
                                                     <input type="text" name="nomealuno" id="nomealuno"/></div>
                                                     <div class="bloco"><button class="buttonformat" class="inserir" onclick="enviar('alunos')">Inserir</button></div>
-                                                    <div class="listagem"></div>`;
+                                                    <div class="listagem"></div>
+                                                    `;
                                                     getAlunos();
 }
 function notas(){
+    atrazo=0;
     document.getElementById('conteudo').innerHTML = `<div class="bloco">
                                                     <div class="labeamento">Ano:</div>
                                                     ${selectAno()}
@@ -34,11 +39,40 @@ function notas(){
                                                     <div class="disciplina">&nbsp</div>
                                                     </div>
                                                     </div>
-                                                 
                                                     <div class="listagem"></div>`;
                                                     getNotas();
 }
+function atrazos(){
+    atrazo=1;
+    document.getElementById('conteudo').innerHTML = `<div class="bloco">
+                                                    <div class="labeamento">Ano:</div>
+                                                    ${selectAno()}
+                                                    </div>
+                                                    <div class="bloco">
+                                                    <div class="labeamento">Série: </div>
+                                                    ${serieTurmas('buscar2')} </div>
+                                                    <div class="bloco2">
+                                                    <div class="labeamento">Turmas: </div>
+                                                    <div class="turma">&nbsp</div>
+                                                    </div>
+                                                    <div class="bloco2">
+                                                    <div class="labeamento">Aluno: </div>
+                                                    <div class="disciplina">&nbsp</div>
+                                                    </div>
+                                                    <div class="bloco2">
+                                                    <div class="labeamento">Data: </div>
+                                                    <div class="data"><input type='datetime-local' name='atrazo' id='atrazo'> 
+                                                    <label for="fixar">Fixar</lavel><input type="checkbox" name="fixar" id="fixar" onchange="fixar()"/></div>
+                                                    </div>
+                                                    <div class="bloco"><button class="buttonformat" class="inserir" onclick="enviar('atrazos')">Inserir</button></div>
+                                                    <div class="listagem"></div>
+                                                    </div>
+                                                    `;
+                                                    getAtrazos();
+                                                    
+}
 function turmas(){
+    atrazo=0;
     document.getElementById('conteudo').innerHTML = `<div class="bloco">
                                                     <div class="labeamento">Série: </div>
                                                     ${serie()} </div>
@@ -50,11 +84,14 @@ function turmas(){
                                                     ${selectAno()}
                                                     </div>
                                                     <div class="bloco"><button class="buttonformat" class="inserir" onclick="enviar('turma')">Inserir</button></div>
-                                                    <div class="listagem"></div>`;
+                                                    <div class="listagem"></div>
+                                                    `;
                                                     getTurmas();
     }
 function disciplinas(){
-    document.getElementById('conteudo').innerHTML = `<div class="bloco">
+    atrazo=0;
+    document.getElementById('conteudo').innerHTML = `
+                                                <div class="bloco">
                                                 <div class="labeamento">Ano:</div>
                                                 ${selectAno()}
                                                 </div>
@@ -69,10 +106,35 @@ function disciplinas(){
                                                 <div class="labeamento">Adicionar Disciplinas:</div>
                                                 <input type="text" name="nomedisciplinas" id="nomedisciplinas"/></div>
                                                 <div class="bloco"><button class="buttonformat" class="inserir" onclick="enviar('disciplinas')">Inserir</button></div>
-                                                <div class="listagem"></div>`;
+                                                <div class="listagem"></div>
+                                                `;
                                                 getDisciplinas();
 }
 
+function fixar(){
+    if(!document.getElementById('fixar').checked){
+        $("#atrazo").val('');
+    }else{
+        atualizaHora();
+        if (document.getElementById("atrazo") !== null) {
+            setInterval(atualizaHora, 1000);
+        }
+    }
+}
+function atualizaHora(){
+    var agora = new Date();
+    /*
+    formatoLocal = new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'medium'
+    });
+    */
+    //$("#atrazo").val(formatoLocal(agora));
+    if(document.getElementById('fixar').checked){
+        agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+        $("#atrazo").val(agora.toISOString().slice(0,16));
+    }
+}
 function serie(){
     return `<select name='serie' id='serie'focus>
             <option value=''>Selecione a Série</option>
@@ -172,6 +234,20 @@ function getNotas(){
         }
     });
 }
+function getAtrazos(){
+    $.post("php/atrazos.php",{atrazos: true })
+    .done(function(data){
+        if(data=="" || data==false){
+            $(".listagem").append("Nenhum dado inserido ainda na lista");
+        }else{
+            $(".listagem").empty();
+            $(".listagem").append(data);
+            $(document).ready(function(){
+                $('#listaAtrazo').DataTable({order: [[0, 'desc']]});
+            });
+        }
+    });
+}
 function buscaTurmas(disciplina){
     let serie = $("#serie").val();
     let ano= $("#ano").val();
@@ -229,13 +305,15 @@ function buscaAluno(){
     let serie = $("#serie").val();
     let turma = $("#turmaDisc").val();
     let ano= $("#ano").val();
-    $.post("php/alunos.php",{busca: serie, turba:turma, ano:ano })
+    let atrazar=atrazo;
+    $.post("php/alunos.php",{busca: serie, turba:turma, ano:ano, atrazado:atrazar })
     .done(function(data){
         $(".disciplina").empty();
         $(".disciplina").append(data);
     })
 }
 function enviar(arquivo){
+    
     if(arquivo=='turma'){
         let turma= $("#nometurma").val();
         let serie= $("#serie").val();
@@ -281,12 +359,40 @@ function enviar(arquivo){
             });
             
         })
+    }else if(arquivo=='atrazos'){
+        let turma= $("#turmaDisc").val();
+        let aluno= $("#alunoDisc").val();
+        let serie= $("#serie").val();
+        let ano= $("#ano").val();
+        let atrazado= $("#atrazo").val();
+        $.post(`php/${arquivo}.php`,{turmas: turma, aluno: aluno, serie: serie, ano: ano, atrazado: atrazado })
+        .done(function(data){
+            $("#alunoDisc").val("");
+            $("#turmaDisc").val("");
+            $("#serie").val("");
+            $("#atrazo").val("");
+            $("#serie").focus();
+            $(".listagem").empty();
+            $(".listagem").append(getAtrazos());
+            $(document).ready(function(){
+                $('#listaAtrazo').DataTable({order: [[0, 'desc']]});
+            });
+            
+        })
     }
 }
 
 function editar(identificacao,tabelas,valor){
-    $(`#ajustar${identificacao}`).empty();
-    $(`#ajustar${identificacao}`).append(`<input type='text' id='atualizando' value='${valor}' onblur="atualizar(${identificacao},'${tabelas}')" />`)
+    if(tabelas=='atrazos'){
+        $(`#ajustar${identificacao}`).empty();
+        $(`#ajustar${identificacao}`).append(`<input type='datetime-local' id='atualizando' value='' onblur="atualizar(${identificacao},'${tabelas}')" />`);
+        valor=(valor*1000)+7200000;
+        var tentando= new Date(valor);
+        $(`#atualizando`).val(tentando.toISOString().slice(0,16));
+    }else{
+        $(`#ajustar${identificacao}`).empty();
+        $(`#ajustar${identificacao}`).append(`<input type='text' id='atualizando' value='${valor}' onblur="atualizar(${identificacao},'${tabelas}')" />`);
+    }
 }
 function atualizar(identificacao, tabelal){
     var valor = $("#atualizando").val();
@@ -301,6 +407,9 @@ function atualizar(identificacao, tabelal){
             variavel = getDisciplinas();
         }else if(tabelal=='alunos'){
             variavel = getAlunos();
+        }else if(tabelal=='atrazos'){
+            variavel = getAtrazos();
+            document.getElementById(`atualizando`).submit();
         }
         $(`.listagem`).append(variavel);
     })
@@ -315,6 +424,8 @@ function deletar(identificacao, tabela){
             variavel = getDisciplinas();
         }else if(tabela=='alunos'){
             variavel = getAlunos();
+        }else if(tabela=='atrazos'){
+            variavel = getAtrazos();
         }
         $(`.listagem`).append(variavel);
     })

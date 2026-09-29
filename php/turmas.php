@@ -54,6 +54,8 @@ if($_POST["turmas"]==true){
                                                                        $selecionavel = "<select id='turmaDisc' name='turmaDisc' ";
                                                                        if($_POST['disciplinar']=='buscar'){
                                                                         $selecionavel.= "onchange='buscaAluno();verificaNotas()'";
+                                                                        }elseif($_POST['disciplinar']=='buscar2'){
+                                                                           $selecionavel.= "onchange='buscaAluno()'";
                                                                        }
                                                                        $selecionavel.=">";
                                                                        $selecionavel.="<option value=''>Selecione a turma</option>";
